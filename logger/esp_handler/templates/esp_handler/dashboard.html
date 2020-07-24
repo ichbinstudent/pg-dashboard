@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+View Wifi Devices
+{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block head %}
+    <script>
+        function hashCode(str) { // java String#hashCode
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return Math.abs(hash);
+        }
+
+        function intToRGB(i) {
+            var c = (i & 0x00FFFFFF)
+                .toString(16)
+                .toUpperCase();
+            return "00000".substring(0, 6 - c.length) + c;
+        }
+
+        $("#reset_button").click(function () {
+            window.location = window.location.href.split(/[?#]/)[0];
+        });
+
+        setTimeout(function () {
+            window.location.reload(true);
+        }, 300000);
+
+        $('#7d_link').click(function () {
+            var d = new Date();
+            window.location = window.location.href.split(/[?#]/)[0] +
+                '?start_time=' + moment().subtract(7, 'days').format('YYYY-MM-DD HH:mm') +
+                '&end_time=' + moment().format('YYYY-MM-DD HH:mm');
+        });
+
+        $('#24h_link').click(function () {
+            var d = new Date();
+            window.location = window.location.href.split(/[?#]/)[0] +
+                '?start_time=' + moment().subtract(24, 'hours').format('YYYY-MM-DD HH:mm') +
+                '&end_time=' + moment().format('YYYY-MM-DD HH:mm');
+        });
+
+        $('#1m_link').click(function () {
+            var d = new Date();
+            window.location = window.location.href.split(/[?#]/)[0] +
+                '?start_time=' + moment().subtract(1, 'month').format('YYYY-MM-DD HH:mm') +
+                '&end_time=' + moment().format('YYYY-MM-DD HH:mm');
+        });
+
+        $(document).ready(function () {
+            var dailyChart = $("#daily_chart");
+            new Chart(dailyChart, {
+                type: 'line',
+                data: {
+                    labels: {{ weekly_history.labels|safe }},
+                    datasets: [{
+                        label: '# of Devices',
+                        data: {{ weekly_history.data|safe }},
+                        borderWidth: 1,
+                        backgroundColor: '#343a4040',
+                        pointBackgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        pointRadius: 4,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 5,
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+
+            var hourlyChart = $("#hourly_chart");
+            new Chart(hourlyChart, {
+                type: 'line',
+                data: {
+                    labels: {{ hourly_history.labels|safe }},
+                    datasets: [{
+                        label: '# of Devices',
+                        data: {{ hourly_history.data|safe }},
+                        borderWidth: 1,
+                        backgroundColor: '#343a4040',
+                        pointBackgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        pointRadius: 4,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 5,
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+
+
+            jQuery.datetimepicker.setLocale('en');
+            jQuery(".datetimeinput").each(function (index) {
+                $(this).datetimepicker({
+                    format: 'Y-m-d H:i',
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+
+        <div class="col- m-2">
+            <button class="btn btn-outline-dark align-top" data-toggle="collapse" data-target="#filterElement"
+                    aria-expanded="false">
+                Filter>
+            </button>
+            <button id="1m_link" class="btn btn-secondary">1 Month</button>
+            <button id="7d_link" class="btn btn-secondary">7 Days</button>
+            <button id="24h_link" class="btn btn-secondary">24 Hours</button>
+            <div class="card collapse outline-dark" id="filterElement">
+                <div class="card-body">
+                    <form method="get">
+                        {{ form|crispy }}
+                        <input type="submit" class="btn btn-success align-left" value="Filter">
+                        <input type="button" id="reset_button" class="btn btn-danger float-right" value="Reset">
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row m-3">
+            <canvas id="daily_chart" width="700" height="300"></canvas>
+            <canvas id="hourly_chart" width="700" height="300"></canvas>
+        </div>
+    </div>
+{% endblock %}

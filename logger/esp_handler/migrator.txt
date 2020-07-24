@@ -1,0 +1,22 @@
+'''
+vendors = {}
+with open("macaddress.io-db.json", "r", encoding="utf8") as vendorfile:
+    vendorslist = [json.loads(line) for line in vendorfile.readlines()]
+    for v in vendorslist:
+        vendors[v['oui'].replace(':', '')[:5]] = v['companyName']
+'''
+
+from esp_handler.models import WifiDevice
+import json
+
+vendors = {}
+with open("macaddress.io-db.json", "r", encoding="utf8") as vendorfile:
+    vendorslist = [json.loads(line) for line in vendorfile.readlines()]
+    for v in vendorslist:
+        vendors[v['oui'].replace(':', '')[:5]] = v['companyName']
+
+
+for d in WifiDevice.objects.all():
+ d.vendor = vendors[d.bssid[:5]] if d.bssid[:5] in vendors else "Not Found"
+ d.save()
+
