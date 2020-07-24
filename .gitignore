@@ -1,0 +1,6 @@
+*.pylib
+venv/
+.idea/
+.mypy_cache/
+*.sqlite3
+*.pyc
